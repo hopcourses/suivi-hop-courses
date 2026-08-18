@@ -51,18 +51,19 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.4);
         }
 
-        /* Encart noir pour le livreur */
+        /* Encart rectangulaire noir élégant pour le livreur */
         .driver-badge {
-            background-color: #111111;
-            color: #ffffff;
+            background-color: rgba(30, 30, 30, 0.85); /* Noir mat légèrement transparent */
+            color: #ffffff;                             /* Texte en blanc */
             font-size: 12px;
             font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #ffffff;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            padding: 6px 12px;                          /* Plus large pour un bel effet rectangulaire */
+            border-radius: 6px;                         /* Coins légèrement arrondis */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Fine bordure blanche discrète */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
             white-space: nowrap;
             transform: translate(-50%, -50%);
+        }
         }
     </style>
 </head>
