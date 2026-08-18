@@ -40,15 +40,15 @@
         <div class="status-box">
             <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
             <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>État :</strong> <span id="order-status">En cours de traitement</span></p>
-            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Arrivée estimée :</strong> <span id="delivery-time">Calcul en cours...</span></p>
+            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Arrivée prévue avant :</strong> <span id="delivery-time">Calcul en cours...</span></p>
         </div>
 
         <!-- Barre de progression -->
         <div>
             <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between;">
-                <span>Préparation</span>
-                <span>En route</span>
-                <span>Livré</span>
+                <span>En préparation</span>
+                <span>En route vers le point de livraison</span>
+                <span>Livrée</span>
             </div>
             <div class="progress-container">
                 <div id="progress" class="progress-bar"></div>
@@ -92,20 +92,20 @@
             document.getElementById('admin-panel').style.display = 'block'; // Affiche l'encart marchand
         } else {
             // Vue par défaut (Destinataire / Client final)
-            document.getElementById('page-title').innerText = "Suivi de votre livraison";
+            document.getElementById('page-title').innerText = "Suivi de votre livraison HOP Courses";
         }
 
         // Barre de progression
         const progressBar = document.getElementById('progress');
         const statusText = document.getElementById('order-status');
 
-        if (status === 'attente') {
+        if (status === 'En attente') {
             statusText.innerText = "En attente de prise en charge";
             progressBar.style.width = '25%';
-        } else if (status === 'en_route') {
-            statusText.innerText = "Partenaire en route vers vous 🛵";
+        } else if (status === 'En route') {
+            statusText.innerText = "Le livreur est en route vers vous 🛵";
             progressBar.style.width = '75%';
-        } else if (status === 'livre') {
+        } else if (status === 'Livrée') {
             statusText.innerText = "Commande livrée avec succès ✅";
             progressBar.style.width = '100%';
             progressBar.style.backgroundColor = '#28a745';
