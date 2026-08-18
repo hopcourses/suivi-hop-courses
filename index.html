@@ -69,7 +69,6 @@
         <div class="status-box">
             <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
             <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Statut :</strong> <span id="order-status">En cours de traitement</span></p>
-            <!-- Label dynamique géré en JS -->
             <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong id="time-label">Date de livraison demandée :</strong> <span id="delivery-time">Calcul en cours...</span></p>
         </div>
 
@@ -128,7 +127,6 @@
         let isPointAPulsing = false; 
         let isDriverMoving = false;  
 
-        // Gestion dynamique du texte de l'heure et du statut
         switch(status) {
             case 'En préparation':
             case 'En attente':
@@ -194,9 +192,9 @@
             }, 50);
         }
 
-        // Rafraîchissement intelligent : force le rechargement de la page pour récupérer les nouvelles données de l'URL Glide
+        // Rafraîchissement forcé sans cache (true force le rechargement depuis le serveur et non le cache du navigateur)
         setTimeout(function(){
-           window.location.reload(1);
+           window.location.reload(true);
         }, 30000);
     </script>
 </body>
