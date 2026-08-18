@@ -42,7 +42,7 @@
             color: #ffffff;
             font-size: 12px;
             font-weight: bold;
-            padding: 4px 40px;
+            padding: 4px 12px;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
@@ -102,7 +102,7 @@
         const role = urlParams.get('role'); 
         const clientName = urlParams.get('client') || 'Client HOP';
         const livreurName = urlParams.get('livreur') || 'Livreur';
-        const typeLivreur = urlParams.get('typeLivreur') || ''; // Particulier ou Pro
+        const typeLivreur = urlParams.get('typeLivreur') || ''; 
 
         const latA = parseFloat(urlParams.get('latA')) || 50.735;
         const lonA = parseFloat(urlParams.get('lonA')) || 2.745;
@@ -183,6 +183,11 @@
                 livreurMarker.setLatLng([latA + (latB - latA) * progress, lonA + (lonB - lonA) * progress]);
             }, 50);
         }
+
+        // Rafraîchissement automatique toutes les 30 secondes pour les mises à jour en direct
+        setTimeout(function(){
+           window.location.reload(1);
+        }, 30000);
     </script>
 </body>
 </html>
