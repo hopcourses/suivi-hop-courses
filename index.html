@@ -24,6 +24,31 @@
         .admin-box { background-color: #fff8f0; border: 1px solid #ff9100; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; display: none; }
         
         .footer { margin-top: 15px; font-size: 13px; color: #666; text-align: center; }
+
+        /* Animation vibrante/clignotante pour le point de collecte */
+        @keyframes pulse-orange {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 145, 0, 0.7); }
+            70% { transform: scale(1.3); box-shadow: 0 0 0 8px rgba(255, 145, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 145, 0, 0); }
+        }
+        .blinking-point {
+            animation: pulse-orange 1s infinite;
+        }
+
+        /* Style de l'étiquette du livreur sur la carte */
+        .driver-label {
+            background-color: #ff0000;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+            text-align: center;
+            transform: translate(-30%, -50%); /* Centrage approximatif */
+        }
     </style>
 </head>
 <body>
@@ -31,7 +56,7 @@
     <div class="container">
         <h3 id="page-title">Suivi de votre livraison</h3>
         
-        <!-- Encart réservé à l'expéditeur (invisible pour le destinataire par défaut) -->
+        <!-- Encart réservé à l'expéditeur -->
         <div id="admin-panel" class="admin-box">
             <strong>Espace Expéditeur / Marchand</strong><br>
             Client : <span id="client-name">Chargement...</span>
@@ -45,9 +70,10 @@
 
         <!-- Barre de progression -->
         <div>
-            <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between;">
-                <span>En préparation</span>
-                <span>En route vers le point de livraison</span>
+            <div style="font-size: 10px; color: #666; display: flex; justify-content: space-between;">
+                <span>Préparation</span>
+                <span>Collecte</span>
+                <span>En route</span>
                 <span>Livrée</span>
             </div>
             <div class="progress-container">
@@ -71,8 +97,9 @@
         const orderId = urlParams.get('id');
         const status = urlParams.get('status') || 'attente';
         const time = urlParams.get('time') || 'Bientôt';
-        const role = urlParams.get('role'); // Récupère le rôle (?role=expediteur ou ?role=destinataire)
+        const role = urlParams.get('role');
         const clientName = urlParams.get('client') || 'Client HOP';
+        const driverName = urlParams.get('livreur') || 'Le livreur'; // Nouveau paramètre pour le prénom du livreur
 
         // GPS par défaut
         const latA = parseFloat(urlParams.get('latA')) || 50.735;
@@ -85,7 +112,6 @@
         document.getElementById('delivery-time').innerText = time;
         document.getElementById('client-name').innerText = clientName;
 
-        // Adaptation selon le RÔLE
         if (role === 'expediteur') {
             document.getElementById('page-title').innerText = "Tableau de bord - Expéditeur";
             document.getElementById('admin-panel').style.display = 'block';
@@ -93,17 +119,31 @@
             document.getElementById('page-title').innerText = "Suivi de votre livraison HOP Courses";
         }
 
-        // Barre de progression et statuts
+        // --- GESTION DES NOUVEAUX STATUTS ET BARRE DE PROGRESSION ---
         const progressBar = document.getElementById('progress');
         const statusText = document.getElementById('order-status');
 
-        if (status === 'En attente') {
+        if (status === 'En attente' || status === 'En préparation') {
             statusText.innerText = "En attente de prise en charge";
-            progressBar.style.width = '25%';
-        } else if (status === 'En route') {
-            statusText.innerText = "Le livreur est en route vers l'adresse de livraison 🛵";
-            progressBar.style.width = '75%';
-        } else if (status === 'Livrée') {
+            progressBar.style.width = '10%';
+        } 
+        else if (status === 'Acceptée') {
+            statusText.innerHTML = `Commande acceptée par <strong>${driverName}</strong>`;
+            progressBar.style.width = '30%';
+        } 
+        else if (status === 'En cours de collecte') {
+            statusText.innerHTML = `<strong>${driverName}</strong> est en route pour le point de collecte`;
+            progressBar.style.width = '50%';
+        } 
+        else if (status === 'Collectée') {
+            statusText.innerHTML = `<strong>${driverName}</strong> a collecté la commande`;
+            progressBar.style.width = '70%';
+        } 
+        else if (status === 'En route') {
+            statusText.innerText = `${driverName} est en route vers l'adresse de livraison 🛵`;
+            progressBar.style.width = '85%';
+        } 
+        else if (status === 'Livrée') {
             statusText.innerText = "Commande livrée avec succès ✅";
             progressBar.style.width = '100%';
             progressBar.style.backgroundColor = '#28a745';
@@ -119,49 +159,47 @@
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        const orangeIcon = L.divIcon({
-            html: '<div style="background-color: #ff9100; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
-            iconSize: [14, 14]
-        });
-
-        const blueIcon = L.divIcon({
-            html: '<div style="background-color: #003366; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
-            iconSize: [14, 14]
-        });
-
-        L.marker([latA, lonA], {icon: orangeIcon}).addTo(map).bindPopup("Point de collecte");
-        L.marker([latB, lonB], {icon: blueIcon}).addTo(map).bindPopup("Point de livraison");
-
-        const polyline = L.polyline([[latA, lonA], [latB, lonB]], {
-            color: '#003366',
-            weight: 3,
-            dashArray: '5, 10'
-        }).addTo(map);
-
-        map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
-
-        // Animation du livreur si le statut est "En route"
-        if (status === 'En route') {
-            const livreurIcon = L.divIcon({
-                html: '<div style="background-color: #ff0000; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px black;"></div>',
-                iconSize: [12, 12]
-            });
-
-            const livreurMarker = L.marker([latA, lonA], {icon: livreurIcon}).addTo(map);
-
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 0.005; // Vitesse de déplacement
-                if (progress > 1) {
-                    clearInterval(interval);
-                } else {
-                    const lat = latA + (latB - latA) * progress;
-                    const lon = lonA + (lonB - lonA) * progress;
-                    livreurMarker.setLatLng([lat, lon]);
-                }
-            }, 50);
+        // --- GESTION DU CLIGNOTEMENT DU POINT A ---
+        let pointCollecteClass = "point-normal";
+        if (status === 'En cours de collecte' || status === 'Collectée') {
+            pointCollecteClass = "blinking-point"; // Ajoute l'effet vibrant
         }
-    </script>
 
-</body>
-</html>
+        const orangeIcon = L.divIconVoici le code mis à jour. J'ai ajouté les nouveaux statuts, l'intégration dynamique du prénom du livreur (via le paramètre `livreur` dans l'URL), l'effet de clignotement/vibration sur le point de collecte, et l'animation en boucle du livreur avec son étiquette.
+
+Pour tester les différents affichages, vous pourrez modifier les paramètres dans l'URL de votre webview (ex: `?id=123&status=En cours de collecte&livreur=Sophie` ou `?status=En route&livreur=Thomas`).
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de commande - HOP Courses</title>
+    
+    <!-- CSS Leaflet -->
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" />
+    
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        h3 { color: #003366; border-bottom: 2px solid #ff9100; padding-bottom: 8px; margin-top: 0; font-size: 18px; }
+        
+        .status-box { background-color: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9100; margin: 15px 0; }
+        
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; margin: 15px 0; overflow: hidden; height: 10px; }
+        .progress-bar { height: 100%; width: 0%; background-color: #ff9100; border-radius: 10px; transition: width 1s ease-in-out; }
+        
+        .progress-labels { font-size: 10px; color: #666; display: flex; justify-content: space-between; margin-bottom: 5px; text-align: center; }
+        .progress-labels span { flex: 1; }
+
+        #map { height: 220px; width: 100%; border-radius: 6px; margin: 15px 0; border: 1px solid #ddd; }
+        
+        /* Style spécifique pour la zone expéditeur */
+        .admin-box { background-color: #fff8f0; border: 1px solid #ff9100; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; display: none; }
+        
+        .footer { margin-top: 15px; font-size: 13px; color: #666; text-align: center; }
+
+        /* Animation de clignotement/vibration pour le point A */
+        @keyframes pulse-animation {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(25
