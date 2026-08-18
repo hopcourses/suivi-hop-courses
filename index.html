@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi de commande - HOP Courses</title>
     
-    <!-- Inclusion du CSS de Leaflet -->
+    <!-- CSS Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -15,12 +15,13 @@
         
         .status-box { background-color: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9100; margin: 15px 0; }
         
-        /* Barre de progression */
         .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; margin: 15px 0; overflow: hidden; height: 10px; }
         .progress-bar { height: 100%; width: 0%; background-color: #ff9100; border-radius: 10px; transition: width 1s ease-in-out; }
         
-        /* Style de la carte Leaflet */
         #map { height: 220px; width: 100%; border-radius: 6px; margin: 15px 0; border: 1px solid #ddd; }
+        
+        /* Style spécifique pour la zone expéditeur */
+        .admin-box { background-color: #fff8f0; border: 1px solid #ff9100; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; display: none; }
         
         .footer { margin-top: 15px; font-size: 13px; color: #666; text-align: center; }
     </style>
@@ -28,20 +29,26 @@
 <body>
 
     <div class="container">
-        <h3>Suivi de votre livraison HOP Courses</h3>
+        <h3 id="page-title">Suivi de votre livraison</h3>
         
+        <!-- Encart réservé à l'expéditeur (invisible pour le destinataire par défaut) -->
+        <div id="admin-panel" class="admin-box">
+            <strong>Espace Expéditeur / Marchand</strong><br>
+            Client : <span id="client-name">Chargement...</span>
+        </div>
+
         <div class="status-box">
-            <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence commande :</strong> <span id="order-id">Chargement...</span></p>
-            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Statut :</strong> <span id="order-status">En cours de traitement</span></p>
-            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Livraison prévue avant :</strong> <span id="delivery-time">Calcul en cours...</span></p>
+            <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
+            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>État :</strong> <span id="order-status">En cours de traitement</span></p>
+            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Arrivée estimée :</strong> <span id="delivery-time">Calcul en cours...</span></p>
         </div>
 
         <!-- Barre de progression -->
         <div>
             <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between;">
-                <span>En attente</span>
+                <span>Préparation</span>
                 <span>En route</span>
-                <span>Livrée</span>
+                <span>Livré</span>
             </div>
             <div class="progress-container">
                 <div id="progress" class="progress-bar"></div>
@@ -56,32 +63,39 @@
         </div>
     </div>
 
-    <!-- Inclusion du Script de Leaflet -->
+    <!-- Script Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. Récupération des paramètres de l'URL
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('id');
         const status = urlParams.get('status') || 'attente';
         const time = urlParams.get('time') || 'Bientôt';
+        const role = urlParams.get('role'); // Récupère le rôle (?role=expéditeur ou ?role=destinataire)
+        const clientName = urlParams.get('client') || 'Client HOP';
 
-        // Coordonnées GPS par défaut (centre de la France ou région par défaut si non fournies)
-        // Format attendu dans l'URL : ?latA=50.7&lonA=2.7&latB=50.8&lonB=2.8
-        const latA = parseFloat(urlParams.get('latA')) || 50.735; // Point de départ (Collecte)
+        // GPS par défaut
+        const latA = parseFloat(urlParams.get('latA')) || 50.735;
         const lonA = parseFloat(urlParams.get('lonA')) || 2.745;
-        const latB = parseFloat(urlParams.get('latB')) || 50.780; // Point d'arrivée (Client)
+        const latB = parseFloat(urlParams.get('latB')) || 50.780;
         const lonB = parseFloat(urlParams.get('lonB')) || 2.820;
 
-        if (orderId) {
-            document.getElementById('order-id').innerText = "#" + orderId;
+        // Remplissage des textes de base
+        document.getElementById('order-id').innerText = orderId ? "#" + orderId : "Non spécifiée";
+        document.getElementById('delivery-time').innerText = time;
+        document.getElementById('client-name').innerText = clientName;
+
+        // Adaptation selon le RÔLE
+        if (role === 'expediteur') {
+            // Si c'oest le marchand, on affiche des infos supplémentaires
+            document.getElementById('page-title').innerText = "Tableau de bord - Expéditeur";
+            document.getElementById('admin-panel').style.display = 'block'; // Affiche l'encart marchand
         } else {
-            document.getElementById('order-id').innerText = "Non spécifiée";
+            // Vue par défaut (Destinataire / Client final)
+            document.getElementById('page-title').innerText = "Suivi de votre livraison";
         }
 
-        document.getElementById('delivery-time').innerText = time;
-
-        // Mise à jour de la barre de progression et du texte
+        // Barre de progression
         const progressBar = document.getElementById('progress');
         const statusText = document.getElementById('order-status');
 
@@ -89,7 +103,7 @@
             statusText.innerText = "En attente de prise en charge";
             progressBar.style.width = '25%';
         } else if (status === 'en_route') {
-            statusText.innerText = "Le livreur est en route vers vous 🛵";
+            statusText.innerText = "Partenaire en route vers vous 🛵";
             progressBar.style.width = '75%';
         } else if (status === 'livre') {
             statusText.innerText = "Commande livrée avec succès ✅";
@@ -97,44 +111,35 @@
             progressBar.style.backgroundColor = '#28a745';
         }
 
-        // 2. Initialisation de la carte Leaflet
-        // On centre la carte au milieu des deux points
+        // Carte Leaflet
         const centerLat = (latA + latB) / 2;
         const centerLon = (lonA + lonB) / 2;
-        
         const map = L.map('map').setView([centerLat, centerLon], 11);
 
-        // Ajout du fond de plan OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        // Style des marqueurs (similaires à ton image : orange pour collecte, bleu foncé pour livraison)
         const orangeIcon = L.divIcon({
-            className: 'custom-marker',
             html: '<div style="background-color: #ff9100; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
             iconSize: [14, 14]
         });
 
         const blueIcon = L.divIcon({
-            className: 'custom-marker',
             html: '<div style="background-color: #003366; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
             iconSize: [14, 14]
         });
 
-        // Ajout des marqueurs sur la carte
-        const markerA = L.marker([latA, lonA], {icon: orangeIcon}).addTo(map).bindPopup("Point de collecte");
-        const markerB = L.marker([latB, lonB], {icon: blueIcon}).addTo(map).bindPopup("Point de livraison");
+        L.marker([latA, lonA], {icon: orangeIcon}).addTo(map).bindPopup("Point de collecte");
+        L.marker([latB, lonB], {icon: blueIcon}).addTo(map).bindPopup("Point de livraison");
 
-        // Tracé de la ligne pointillée entre les deux points (comme sur ton image)
         const polyline = L.polyline([[latA, lonA], [latB, lonB]], {
             color: '#003366',
             weight: 3,
-            dashArray: '5, 10' // Effet pointillé
+            dashArray: '5, 10'
         }).addTo(map);
 
-        // Ajuster le zoom de la carte pour inclure les deux points parfaitement
         map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
     </script>
 
