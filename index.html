@@ -28,20 +28,20 @@
 <body>
 
     <div class="container">
-        <h3>Suivi de votre livraison</h3>
+        <h3>Suivi de votre livraison HOP Courses</h3>
         
         <div class="status-box">
-            <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
-            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>État :</strong> <span id="order-status">En cours de traitement</span></p>
+            <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence commande :</strong> <span id="order-id">Chargement...</span></p>
+            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Statut :</strong> <span id="order-status">En cours de traitement</span></p>
             <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Livraison prévue avant :</strong> <span id="delivery-time">Calcul en cours...</span></p>
         </div>
 
         <!-- Barre de progression -->
         <div>
             <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between;">
-                <span>Préparation</span>
+                <span>En attente</span>
                 <span>En route</span>
-                <span>Livré</span>
+                <span>Livrée</span>
             </div>
             <div class="progress-container">
                 <div id="progress" class="progress-bar"></div>
@@ -89,7 +89,7 @@
             statusText.innerText = "En attente de prise en charge";
             progressBar.style.width = '25%';
         } else if (status === 'en_route') {
-            statusText.innerText = "Partenaire en route vers vous 🛵";
+            statusText.innerText = "Le livreur est en route vers vous 🛵";
             progressBar.style.width = '75%';
         } else if (status === 'livre') {
             statusText.innerText = "Commande livrée avec succès ✅";
