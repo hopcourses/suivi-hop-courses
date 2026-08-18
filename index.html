@@ -69,7 +69,8 @@
         <div class="status-box">
             <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
             <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Statut :</strong> <span id="order-status">En cours de traitement</span></p>
-            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong>Arrivée prévue avant :</strong> <span id="delivery-time">Calcul en cours...</span></p>
+            <!-- Label dynamique géré en JS -->
+            <p style="margin: 6px 0 0 0; color: #003366; font-size: 14px;"><strong id="time-label">Date de livraison demandée :</strong> <span id="delivery-time">Calcul en cours...</span></p>
         </div>
 
         <div>
@@ -122,43 +123,52 @@
 
         const progressBar = document.getElementById('progress');
         const statusText = document.getElementById('order-status');
+        const timeLabel = document.getElementById('time-label');
         
         let isPointAPulsing = false; 
         let isDriverMoving = false;  
 
+        // Gestion dynamique du texte de l'heure et du statut
         switch(status) {
             case 'En préparation':
             case 'En attente':
                 statusText.innerText = "En attente de prise en charge";
                 progressBar.style.width = '10%';
+                timeLabel.innerText = "Date de livraison demandée :";
                 break;
             case 'Acceptée':
                 statusText.innerHTML = `Commande acceptée par <strong>${livreurName}</strong> (${typeLivreur})`;
                 progressBar.style.width = '30%';
+                timeLabel.innerText = "Arrivée prévue avant :";
                 break;
             case 'En cours de collecte':
                 statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) en route pour collecte`;
                 progressBar.style.width = '50%';
                 isPointAPulsing = true;
+                timeLabel.innerText = "Arrivée prévue avant :";
                 break;
             case 'Collectée':
                 statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) a collecté la commande`;
                 progressBar.style.width = '70%';
                 isPointAPulsing = true;
+                timeLabel.innerText = "Arrivée prévue avant :";
                 break;
             case 'En route':
                 statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) en route vers vous`;
                 progressBar.style.width = '85%';
                 isDriverMoving = true;
+                timeLabel.innerText = "Arrivée prévue avant :";
                 break;
             case 'Livrée':
                 statusText.innerText = "Commande livrée avec succès ✅";
                 progressBar.style.width = '100%';
                 progressBar.style.backgroundColor = '#28a745';
+                timeLabel.innerText = "Livré à :";
                 break;
             default:
                 statusText.innerText = status;
                 progressBar.style.width = '10%';
+                timeLabel.innerText = "Arrivée prévue avant :";
         }
 
         const map = L.map('map').setView([(latA + latB) / 2, (lonA + lonB) / 2], 11);
@@ -184,7 +194,7 @@
             }, 50);
         }
 
-        // Rafraîchissement automatique toutes les 30 secondes pour les mises à jour en direct
+        // Rafraîchissement intelligent : force le rechargement de la page pour récupérer les nouvelles données de l'URL Glide
         setTimeout(function(){
            window.location.reload(1);
         }, 30000);
