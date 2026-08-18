@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de commande - HOP Courses</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 40px auto; background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { color: #003366; border-bottom: 2px solid #ff9100; padding-bottom: 10px; margin-top: 0; }
+        .status-box { background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9100; margin: 20px 0; }
+        .footer { margin-top: 30px; font-size: 14px; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Suivi de votre livraison HOP Courses</h2>
+        <p>Statut actuel de votre commande :</p>
+        
+        <div class="status-box">
+            <p style="margin: 0; color: #003366;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
+            <p style="margin: 10px 0 0 0; color: #003366;"><strong>État :</strong> <span id="order-status">En cours de traitement</span></p>
+        </div>
+
+        <p>Vous pouvez retrouver l'historique complet et les détails dans votre application <strong>HOP Courses</strong>.</p>
+        
+        <div class="footer">
+            Une question ? Contactez-nous sur <a href="mailto:contact@hop-courses.com" style="color: #003366; font-weight: bold;">contact@hop-courses.com</a>
+        </div>
+    </div>
+
+    <script>
+        // Récupère l'ID de commande dans l'URL (ex: ?id=123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        
+        if (orderId) {
+            document.getElementById('order-id').innerText = "#" + orderId;
+        } else {
+            document.getElementById('order-id').innerText = "Non spécifiée";
+        }
+    </script>
+
+</body>
+</html>
