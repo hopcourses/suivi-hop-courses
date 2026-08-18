@@ -8,7 +8,16 @@
         body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 15px; color: #333; }
         .container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         h3 { color: #003366; border-bottom: 2px solid #ff9100; padding-bottom: 8px; margin-top: 0; font-size: 18px; }
+        
         .status-box { background-color: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9100; margin: 15px 0; }
+        
+        /* Style de la barre de progression animée */
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; margin: 15px 0; overflow: hidden; height: 12px; }
+        .progress-bar { height: 100%; width: 0%; background-color: #ff9100; border-radius: 10px; transition: width 1s ease-in-out; }
+        
+        /* Style de la fausse map / aperçu trajet */
+        .map-box { background-color: #eef2f5; border: 1px dashed #003366; height: 120px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #003366; font-size: 13px; margin: 15px 0; text-align: center; padding: 0 10px; }
+        
         .footer { margin-top: 20px; font-size: 13px; color: #666; text-align: center; }
     </style>
 </head>
@@ -20,6 +29,24 @@
         <div class="status-box">
             <p style="margin: 0; color: #003366; font-size: 14px;"><strong>Référence :</strong> <span id="order-id">Chargement...</span></p>
             <p style="margin: 8px 0 0 0; color: #003366; font-size: 14px;"><strong>État :</strong> <span id="order-status">En cours de traitement</span></p>
+            <p style="margin: 8px 0 0 0; color: #003366; font-size: 14px;"><strong>Arrivée estimée :</strong> <span id="delivery-time">Calcul en cours...</span></p>
+        </div>
+
+        <!-- Barre de progression animée -->
+        <div>
+            <div style="font-size: 12px; color: #666; display: flex; justify-content: space-between;">
+                <span>Préparation</span>
+                <span>En route</span>
+                <span>Livré</span>
+            </div>
+            <div class="progress-container">
+                <div id="progress" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Zone Map / Trajet -->
+        <div class="map-box" id="map-container">
+            <span>Trajet : Collecte ➔ Destination<br><small>(Mise à jour en temps réel)</small></span>
         </div>
 
         <div class="footer">
@@ -28,14 +55,34 @@
     </div>
 
     <script>
-        // Récupère l'ID de commande dans l'URL (ex: ?id=123)
+        // Récupère les paramètres de l'URL (ex: ?id=123&status=en_route&time=14:30)
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('id');
-        
+        const status = urlParams.get('status') || 'attente';
+        const time = urlParams.get('time') || 'Bientôt';
+
         if (orderId) {
             document.getElementById('order-id').innerText = "#" + orderId;
         } else {
             document.getElementById('order-id').innerText = "Non spécifiée";
+        }
+
+        document.getElementById('delivery-time').innerText = time;
+
+        // Animation de la barre de progression selon le statut passé dans l'URL
+        const progressBar = document.getElementById('progress');
+        const statusText = document.getElementById('order-status');
+
+        if (status === 'attente') {
+            statusText.innerText = "En attente de prise en charge";
+            progressBar.style.width = '25%';
+        } else if (status === 'en_route') {
+            statusText.innerText = "Partenaire en route vers vous 🛵";
+            progressBar.style.width = '75%';
+        } else if (status === 'livre') {
+            statusText.innerText = "Commande livrée avec succès ✅";
+            progressBar.style.width = '100%';
+            progressBar.style.backgroundColor = '#28a745'; // Vert pour validé
         }
     </script>
 
