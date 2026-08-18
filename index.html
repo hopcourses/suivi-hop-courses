@@ -51,17 +51,18 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.4);
         }
 
-        /* Encart rectangulaire horizontal (large) */
+        /* Encart rectangulaire horizontal (large) avec texte centré */
         .driver-badge {
             background-color: rgba(20, 20, 20, 0.9);
             color: #ffffff;
             font-size: 12px;
             font-weight: bold;
-            padding: 4px 50px;          /* Moins haut, plus large */
-            border-radius: 4px;         /* Coins légèrement arrondis */
+            padding: 4px 40px;
+            border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;        /* Empêche le texte de couper sur plusieurs lignes */
+            white-space: nowrap;
+            text-align: center;         /* <-- C'est cette ligne qui centre le prénom */
             transform: translate(-50%, -50%);
         }
     </style>
