@@ -27,46 +27,32 @@
         
         .footer { margin-top: 15px; font-size: 13px; color: #666; text-align: center; }
 
-        /* Animation de pulsation pour le point de collecte */
+        /* Animation pulsation pour le point de collecte */
         @keyframes pulse-orange-ring {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 145, 0, 0.7); }
             70% { transform: scale(1.3); box-shadow: 0 0 0 10px rgba(255, 145, 0, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 145, 0, 0); }
         }
-        .collecte-pulse {
-            background-color: #ff9100; 
-            width: 14px; 
-            height: 14px; 
-            border-radius: 50%; 
-            border: 2px solid white; 
-            animation: pulse-orange-ring 1.2s infinite;
-        }
+        .collecte-pulse { background-color: #ff9100; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; animation: pulse-orange-ring 1.2s infinite; }
+        .collecte-normal { background-color: #ff9100; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4); }
 
-        .collecte-normal {
-            background-color: #ff9100; 
-            width: 14px; 
-            height: 14px; 
-            border-radius: 50%; 
-            border: 2px solid white; 
-            box-shadow: 0 0 4px rgba(0,0,0,0.4);
-        }
-
-        /* Encart rectangulaire avec centrage parfait (Flexbox) */
+        /* Encart rectangulaire noir avec centrage parfait */
         .driver-badge {
             background-color: rgba(20, 20, 20, 0.9);
             color: #ffffff;
             font-size: 12px;
             font-weight: bold;
-            padding: 4px 50px;
+            padding: 4px 40px;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
             white-space: nowrap;
-            /* La magie du centrage parfait : */
             display: flex;
             justify-content: center;
             align-items: center;
-            transform: translate(-50%, -50%);
+            transform: none !important;
+            margin-left: -50%;
+            margin-top: -15px;
         }
     </style>
 </head>
@@ -116,6 +102,7 @@
         const role = urlParams.get('role'); 
         const clientName = urlParams.get('client') || 'Client HOP';
         const livreurName = urlParams.get('livreur') || 'Livreur';
+        const typeLivreur = urlParams.get('typeLivreur') || ''; // Particulier ou Pro
 
         const latA = parseFloat(urlParams.get('latA')) || 50.735;
         const lonA = parseFloat(urlParams.get('lonA')) || 2.745;
@@ -146,21 +133,21 @@
                 progressBar.style.width = '10%';
                 break;
             case 'Acceptée':
-                statusText.innerText = `Commande acceptée par ${livreurName}`;
+                statusText.innerHTML = `Commande acceptée par <strong>${livreurName}</strong> (${typeLivreur})`;
                 progressBar.style.width = '30%';
                 break;
             case 'En cours de collecte':
-                statusText.innerText = `${livreurName} est en route pour le point de collecte`;
+                statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) en route pour collecte`;
                 progressBar.style.width = '50%';
                 isPointAPulsing = true;
                 break;
             case 'Collectée':
-                statusText.innerText = `${livreurName} a collecté la commande`;
+                statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) a collecté la commande`;
                 progressBar.style.width = '70%';
                 isPointAPulsing = true;
                 break;
             case 'En route':
-                statusText.innerText = `${livreurName} est en route vers l'adresse de livraison`;
+                statusText.innerHTML = `<strong>${livreurName}</strong> (${typeLivreur}) en route vers vous`;
                 progressBar.style.width = '85%';
                 isDriverMoving = true;
                 break;
@@ -174,61 +161,28 @@
                 progressBar.style.width = '10%';
         }
 
-        const centerLat = (latA + latB) / 2;
-        const centerLon = (lonA + lonB) / 2;
-        const map = L.map('map').setView([centerLat, centerLon], 11);
+        const map = L.map('map').setView([(latA + latB) / 2, (lonA + lonB) / 2], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+        const orangeIcon = L.divIcon({ html: `<div class="${isPointAPulsing ? 'collecte-pulse' : 'collecte-normal'}"></div>`, iconSize: [14, 14], className: '' });
+        const blueIcon = L.divIcon({ html: '<div style="background-color: #003366; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>', iconSize: [14, 14], className: '' });
 
-        const pointClass = isPointAPulsing ? 'collecte-pulse' : 'collecte-normal';
-        const orangeIcon = L.divIcon({
-            html: `<div class="${pointClass}"></div>`,
-            iconSize: [14, 14],
-            className: ''
-        });
+        L.marker([latA, lonA], {icon: orangeIcon}).addTo(map);
+        L.marker([latB, lonB], {icon: blueIcon}).addTo(map);
 
-        const blueIcon = L.divIcon({
-            html: '<div style="background-color: #003366; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
-            iconSize: [14, 14],
-            className: ''
-        });
-
-        L.marker([latA, lonA], {icon: orangeIcon}).addTo(map).bindPopup("Point de collecte");
-        L.marker([latB, lonB], {icon: blueIcon}).addTo(map).bindPopup("Point de livraison");
-
-        const polyline = L.polyline([[latA, lonA], [latB, lonB]], {
-            color: '#003366',
-            weight: 3,
-            dashArray: '5, 10'
-        }).addTo(map);
-
+        const polyline = L.polyline([[latA, lonA], [latB, lonB]], { color: '#003366', weight: 3, dashArray: '5, 10' }).addTo(map);
         map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
 
-        // Encart rectangulaire noir avec le prénom uniquement
         if (isDriverMoving) {
-            const livreurIcon = L.divIcon({
-                html: `<div class="driver-badge">${livreurName}</div>`,
-                iconSize: [0, 0],
-                className: ''
-            });
-
+            const livreurIcon = L.divIcon({ html: `<div class="driver-badge">${livreurName}</div>`, iconSize: [0, 0], className: '' });
             const livreurMarker = L.marker([latA, lonA], {icon: livreurIcon}).addTo(map);
-
             let progress = 0;
             setInterval(() => {
                 progress += 0.005; 
-                if (progress > 1) {
-                    progress = 0; 
-                }
-                const lat = latA + (latB - latA) * progress;
-                const lon = lonA + (lonB - lonA) * progress;
-                livreurMarker.setLatLng([lat, lon]);
+                if (progress > 1) progress = 0;
+                livreurMarker.setLatLng([latA + (latB - latA) * progress, lonA + (lonB - lonA) * progress]);
             }, 50);
         }
     </script>
-
 </body>
 </html>
