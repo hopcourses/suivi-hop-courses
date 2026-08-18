@@ -71,7 +71,7 @@
         const orderId = urlParams.get('id');
         const status = urlParams.get('status') || 'attente';
         const time = urlParams.get('time') || 'Bientôt';
-        const role = urlParams.get('role'); // Récupère le rôle (?role=expéditeur ou ?role=destinataire)
+        const role = urlParams.get('role'); // Récupère le rôle (?role=expediteur ou ?role=destinataire)
         const clientName = urlParams.get('client') || 'Client HOP';
 
         // GPS par défaut
@@ -87,15 +87,13 @@
 
         // Adaptation selon le RÔLE
         if (role === 'expediteur') {
-            // Si c'oest le marchand, on affiche des infos supplémentaires
             document.getElementById('page-title').innerText = "Tableau de bord - Expéditeur";
-            document.getElementById('admin-panel').style.display = 'block'; // Affiche l'encart marchand
+            document.getElementById('admin-panel').style.display = 'block';
         } else {
-            // Vue par défaut (Destinataire / Client final)
             document.getElementById('page-title').innerText = "Suivi de votre livraison HOP Courses";
         }
 
-        // Barre de progression
+        // Barre de progression et statuts
         const progressBar = document.getElementById('progress');
         const statusText = document.getElementById('order-status');
 
@@ -111,7 +109,7 @@
             progressBar.style.backgroundColor = '#28a745';
         }
 
-        // Carte Leaflet
+        // Initialisation de la carte Leaflet
         const centerLat = (latA + latB) / 2;
         const centerLon = (lonA + lonB) / 2;
         const map = L.map('map').setView([centerLat, centerLon], 11);
@@ -141,6 +139,28 @@
         }).addTo(map);
 
         map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+
+        // Animation du livreur si le statut est "En route"
+        if (status === 'En route') {
+            const livreurIcon = L.divIcon({
+                html: '<div style="background-color: #ff0000; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px black;"></div>',
+                iconSize: [12, 12]
+            });
+
+            const livreurMarker = L.marker([latA, lonA], {icon: livreurIcon}).addTo(map);
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 0.005; // Vitesse de déplacement
+                if (progress > 1) {
+                    clearInterval(interval);
+                } else {
+                    const lat = latA + (latB - latA) * progress;
+                    const lon = lonA + (lonB - lonA) * progress;
+                    livreurMarker.setLatLng([lat, lon]);
+                }
+            }, 50);
+        }
     </script>
 
 </body>
